@@ -28,7 +28,14 @@
 
     <!-- ITEM 7: Dados Estruturados JSON-LD (schema.org) Gerados Dinamicamente a partir do Banco -->
     <script type="application/ld+json" id="dynamic-jsonld">
-{{SSR_JSONLD}}
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Sistema de Consulta de Cidadão & Prontuários",
+  "description": "Sistema institucional de consulta e gestão de prontuários integrado ao Supabase e ao E-Docs/ES.",
+  "url": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/",
+  "inLanguage": "pt-BR"
+}
     </script>
 
     <link rel="stylesheet" href="style.css">
