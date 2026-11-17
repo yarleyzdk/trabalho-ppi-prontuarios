@@ -144,6 +144,24 @@ function brDateToIso(dtBr) {
     return dtBr;
 }
 
+function formatarDataHoraBrasil(dataStr) {
+    if (!dataStr) return '';
+    const iso = dataStr.includes('T') || dataStr.includes('+') || dataStr.endsWith('Z')
+        ? dataStr
+        : dataStr.replace(' ', 'T') + 'Z';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return dataStr;
+    return d.toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+}
+
 function mapSupabaseRow(r) {
     return {
         id: r.id,
@@ -973,7 +991,7 @@ async function atualizarPainelInspecao() {
                             <td>${escapeHtml(log.cidadao_nome)}</td>
                             <td><code>${escapeHtml(log.cidadao_matricula)}</code></td>
                             <td>${escapeHtml(log.detalhes || '')}</td>
-                            <td>${escapeHtml(log.data_hora || '')}</td>
+                            <td>${escapeHtml(formatarDataHoraBrasil(log.data_hora))}</td>
                         </tr>
                     `).join('');
                 }
@@ -1019,7 +1037,7 @@ async function atualizarPainelInspecao() {
                     <td>${escapeHtml(log.cidadao_nome)}</td>
                     <td><code>${escapeHtml(log.cidadao_matricula)}</code></td>
                     <td>${escapeHtml(log.detalhes || '')}</td>
-                    <td>${escapeHtml(log.data_hora || '')}</td>
+                    <td>${escapeHtml(formatarDataHoraBrasil(log.data_hora))}</td>
                 </tr>`
                 )
                 .join('');
