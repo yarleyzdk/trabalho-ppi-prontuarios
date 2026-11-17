@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR" prefix="og: https://ogp.me/ns#">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ITEM 7: Metadados Próprios Gerados a partir dos Dados da Aplicação -->
+    <title id="dynamic-title">Sistema de Consulta de Cidadão &amp; Prontuários</title>
+    <meta name="description" id="dynamic-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao SGBD Supabase (PostgreSQL na nuvem) / SQLite e ao E-Docs/ES.">
+    <meta name="author" content="Grupo PPI - Faculdade Multivix">
+    <meta name="robots" content="index, follow">
+
+    <!-- ITEM 7: Open Graph (Prévia para WhatsApp, Telegram e Redes Sociais) -->
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Sistema de Consulta de Cidadão &amp; Prontuários">
+    <meta property="og:title" id="og-title" content="Sistema de Consulta de Cidadão &amp; Prontuários">
+    <meta property="og:description" id="og-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao Supabase (PostgreSQL) / SQLite e ao E-Docs/ES.">
+    <meta property="og:url" id="og-url" content="http://localhost:3000/">
+    <meta property="og:image" id="og-image" content="img/logo-trabalhoPPI.png">
+    <meta property="og:image:alt" content="Brasão e logotipo oficial do Sistema de Consulta de Prontuários">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" id="twitter-title" content="Sistema de Consulta de Cidadão &amp; Prontuários">
+    <meta name="twitter:description" id="twitter-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao Supabase (PostgreSQL) / SQLite e ao E-Docs/ES.">
+
+    <!-- ITEM 7: Dados Estruturados JSON-LD (schema.org) Gerados Dinamicamente a partir do Banco -->
+    <script type="application/ld+json" id="dynamic-jsonld">
+{{SSR_JSONLD}}
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Link de Acessibilidade para Navegação por Teclado (WCAG) -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
+    <!-- TELA DE LOGIN -->
+    <section id="login-screen" class="screen" aria-labelledby="login-heading">
+        <div class="card login-card" role="region" aria-describedby="login-subtitle">
+            <div class="login-brand">
+                <img src="img/logo-trabalhoPPI.png" alt="Brasão oficial do Sistema de Consulta de Cidadão e Prontuários" width="64" height="64">
+                <h1 id="login-heading" class="login-main-title">Sistema de Consulta de Prontuários</h1>
+            </div>
+            <h2 class="login-subtitle-heading">Autenticação no Sistema</h2>
+            <p id="login-subtitle" class="subtitle">Acesse com suas credenciais institucionais (qualquer usuário/senha para demonstração)</p>
+
+            <form id="login-form" aria-label="Formulário de autenticação institucional">
+                <div class="form-group">
+                    <label for="username">Usuário / CPF <span class="required-mark" aria-hidden="true">*</span></label>
+                    <input type="text" id="username" name="username" placeholder="Digite seu usuário ou CPF" autocomplete="username" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha <span class="required-mark" aria-hidden="true">*</span></label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha" autocomplete="current-password" required aria-required="true">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Entrar no Painel</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- TELA PRINCIPAL (PAINEL DE CONSULTA E GESTÃO INTEGRADO AO SUPABASE / SQLITE) -->
+    <div id="app-screen" class="screen hidden">
+        <header class="navbar" role="banner">
+            <div class="logo">
+                <img src="img/logo-trabalhoPPI.png" alt="Brasão e logotipo do Sistema de Consulta de Prontuários" width="68" height="68">
+                <div>
+                    <h1>Sistema de Consulta de Prontuários</h1>
+                    <p class="header-tagline">
+                        SGBD Ativo: <strong id="active-db-label">Verificando...</strong> &bull;
+                        <span id="db-count-badge">0</span> registros
+                    </p>
+                </div>
+            </div>
+
+            <div class="user-info" role="navigation" aria-label="Controle de sessão do operador">
+                <span id="user-display" aria-live="polite">Usuário: Operador</span>
+                <button id="logout-btn" type="button" class="btn btn-secondary btn-sm">Sair</button>
+            </div>
+        </header>
+
+        <main id="main-content" class="container" role="main" tabindex="-1">
+            <!-- BARRA DE AÇÕES RÁPIDAS (Teclado & Acessibilidade) -->
+            <nav class="card toolbar-card" aria-label="Ferramentas de gestão de prontuários e banco de dados">
+                <div class="toolbar-actions">
+                    <button type="button" id="btn-list-all" class="btn btn-primary">
+                        Listar Todos do Banco
+                    </button>
+                    <button type="button" id="btn-toggle-crud" class="btn btn-accent" aria-expanded="false" aria-controls="crud-section">
+                        + Cadastrar Cidadão
+                    </button>
+                    <button type="button" id="btn-toggle-supabase" class="btn btn-outline" aria-expanded="false" aria-controls="supabase-section">
+                        Conectar Supabase (Nuvem)
+                    </button>
+                    <button type="button" id="btn-toggle-inspector" class="btn btn-secondary" aria-expanded="false" aria-controls="inspector-section">
+                        Inspecionar Banco &amp; JSON-LD
+                    </button>
+                </div>
+            </nav>
+
+            <!-- ALERTA DE OPERAÇÕES DE ESCRITA NO BANCO (INSERT / UPDATE / DELETE) -->
+            <div id="operation-alert" class="alert hidden" role="alert" aria-live="assertive"></div>
+
+            <!-- PAINEL DE CONFIGURAÇÃO DO SUPABASE (NUVEM POSTGRESQL) -->
+            <section id="supabase-section" class="card crud-card hidden" aria-labelledby="supabase-heading">
+                <div class="section-header-row">
+                    <div>
+                        <h2 id="supabase-heading">Conexão com o Supabase (PostgreSQL na Nuvem)</h2>
+                        <p class="subtitle">
+                            Cole abaixo a <strong>Project URL</strong> e a <strong>Anon Public Key</strong> do seu projeto no Supabase (ou defina no arquivo <code>config.js</code> para deixar fixo ao hospedar no GitHub Pages / Vercel / Netlify).
+                        </p>
+                    </div>
+                    <button type="button" id="btn-close-supabase" class="btn btn-secondary btn-sm" aria-label="Fechar configuração do Supabase">
+                        Fechar &times;
+                    </button>
+                </div>
+
+                <form id="supabase-form">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="supa-url">Supabase Project URL</label>
+                            <input type="url" id="supa-url" placeholder="https://seu-projeto.supabase.co">
+                        </div>
+                        <div class="form-group flex-3">
+                            <label for="supa-key">Supabase Anon Public Key (API Key)</label>
+                            <input type="text" id="supa-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                        </div>
+                    </div>
+                    <div class="form-row" style="justify-content: flex-end; gap: 10px;">
+                        <button type="button" id="btn-disconnect-supabase" class="btn btn-danger btn-sm">
+                            Usar SQLite Local
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            Salvar e Conectar ao Supabase
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- SEÇÃO DE CADASTRO E EDIÇÃO (ITEM 8 — OPERAÇÕES DE ESCRITA NO BANCO) -->
+            <section id="crud-section" class="card crud-card hidden" aria-labelledby="crud-heading">
+                <div class="section-header-row">
+                    <div>
+                        <h2 id="crud-heading">Cadastrar Novo Cidadão no Banco de Dados</h2>
+                        <p class="subtitle" id="crud-subtitle">
+                            Operação de escrita real no SGBD (Supabase PostgreSQL na nuvem ou SQLite local) com envio parametrizado seguro contra SQL Injection.
+                        </p>
+                    </div>
+                    <button type="button" id="btn-close-crud" class="btn btn-secondary btn-sm" aria-label="Fechar formulário de cadastro">
+                        Fechar &times;
+                    </button>
+                </div>
+
+                <form id="crud-form" aria-describedby="crud-subtitle">
+                    <input type="hidden" id="crud-id" value="">
+
+                    <div class="form-row">
+                        <div class="form-group flex-3">
+                            <label for="crud-nome">Nome Completo do Cidadão <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-nome" name="nome" placeholder="Ex.: JOÃO CARLOS DA SILVA" required aria-required="true">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="crud-cpf">CPF <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" required aria-required="true">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="crud-dtnasc">Data de Nascimento <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-dtnasc" name="dtNascimento" placeholder="DD/MM/AAAA" maxlength="10" required aria-required="true">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="crud-matricula">Matrícula / Protocolo <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-matricula" name="matricula" placeholder="Ex.: MAT-5501" required aria-required="true">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="crud-origem">Origem do Prontuário <span class="required-mark" aria-hidden="true">*</span></label>
+                            <select id="crud-origem" name="origem" required aria-required="true">
+                                <option value="modulo">Módulo (Instrução Formativa)</option>
+                                <option value="bpe">BPE (Banca de Exames Permanente)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="crud-mae">Nome da Mãe <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-mae" name="mae" placeholder="Digite o nome completo da mãe..." required aria-required="true">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="crud-pai">Nome do Pai <span class="required-mark" aria-hidden="true">*</span></label>
+                            <input type="text" id="crud-pai" name="pai" placeholder="Digite o nome completo do pai..." required aria-required="true">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-3">
+                            <label for="crud-link">Link do Processo no E-Docs</label>
+                            <input type="url" id="crud-link" name="linkProcessoEDocs" value="https://treinamento.e-docs.es.gov.br/Processo/Protocolo/2026-D8TCS" placeholder="https://treinamento.e-docs.es.gov.br/Processo/Protocolo/...">
+                        </div>
+                        <div class="form-group btn-align crud-btn-group">
+                            <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">Cancelar Edição</button>
+                            <button type="submit" id="btn-save-crud" class="btn btn-primary">Salvar no Banco</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- PAINEL DE PESQUISA -->
+            <section class="card search-card" aria-labelledby="search-heading">
+                <h2 id="search-heading">Pesquisar Cidadão</h2>
+                <form id="search-form" role="search" aria-label="Pesquisar prontuários no banco de dados">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="search-origin">Onde Pesquisar</label>
+                            <select id="search-origin" name="origem">
+                                <option value="todas">Todas as Origens (Módulo + BPE)</option>
+                                <option value="modulo" selected>Módulo (Instrução Formativa)</option>
+                                <option value="bpe">BPE (Banca de Exames Permanente)</option>
+                            </select>
+                        </div>
+
+                        <!-- BUSCA SIMPLES -->
+                        <div class="form-group flex-3" id="simple-search-container">
+                            <label for="search-query">Termo de Busca Rápida</label>
+                            <input type="search" id="search-query" name="q" placeholder="Digite o Nome, CPF ou Matrícula (ou deixe em branco para listar a origem)...">
+                        </div>
+
+                        <div class="form-group btn-align" id="simple-search-btn-container">
+                            <button type="submit" class="btn btn-primary" id="simple-search-btn">Buscar</button>
+                        </div>
+                    </div>
+
+                    <button type="button" id="toggle-advanced-btn" class="btn btn-secondary" aria-expanded="false" aria-controls="advanced-search-container">
+                        Busca Avançada
+                    </button>
+
+                    <!-- BUSCA AVANÇADA (Escondida por padrão) -->
+                    <fieldset id="advanced-search-container" class="hidden advanced-fieldset">
+                        <legend class="sr-only">Filtros de Busca Avançada Cumulativa</legend>
+                        <hr class="divider" aria-hidden="true">
+
+                        <div class="form-row">
+                            <div class="form-group flex-3">
+                                <label for="adv-nome">Nome do Cidadão</label>
+                                <input type="text" id="adv-nome" name="nome" placeholder="Digite o nome...">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="adv-cpf">CPF</label>
+                                <input type="text" id="adv-cpf" name="cpf" placeholder="000.000.000-00" maxlength="14">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="adv-mae">Nome da Mãe</label>
+                                <input type="text" id="adv-mae" name="mae" placeholder="Nome da mãe...">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="adv-pai">Nome do Pai</label>
+                                <input type="text" id="adv-pai" name="pai" placeholder="Nome do pai...">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="adv-dtnasc">Data de Nascimento</label>
+                                <input type="text" id="adv-dtnasc" name="dtNascimento" placeholder="DD/MM/AAAA" maxlength="10">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="adv-matricula">Matrícula</label>
+                                <input type="text" id="adv-matricula" name="matricula" placeholder="Ex: MAT-9901">
+                            </div>
+                            <div class="form-group btn-align">
+                                <button type="submit" class="btn btn-primary" id="advanced-search-btn">Buscar com Filtros</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </section>
+
+            <!-- FEEDBACK DOS PARÂMETROS PESQUISADOS -->
+            <div id="search-feedback" class="alert alert-info hidden" role="status" aria-live="polite"></div>
+
+            <!-- RESULTADO DA CONSULTA (Preenchido com HTML Semântico <article> e <dl>/<dt>/<dd>) -->
+            <section id="results-section" class="hidden" aria-labelledby="results-heading">
+                <h2 id="results-heading" class="section-heading-bar">Resultados Encontrados no Banco de Dados</h2>
+                <div id="results-list"></div>
+            </section>
+
+            <!-- MENSAGEM DE ERRO/NÃO ENCONTRADO -->
+            <div id="no-results" class="alert alert-warning hidden" role="status" aria-live="polite">
+                <strong>Nenhum registro encontrado no banco de dados!</strong> Verifique os filtros informados ou cadastre um novo prontuário.
+            </div>
+
+            <!-- PAINEL DE INSPEÇÃO TÉCNICA (APOIO À APRESENTAÇÃO DOS ITENS 7 E 8) -->
+            <section id="inspector-section" class="card inspector-card hidden" aria-labelledby="inspector-heading">
+                <div class="section-header-row">
+                    <div>
+                        <h2 id="inspector-heading">Inspeção ao Vivo: Banco de Dados (Item 8) &amp; Conteúdo Semântico (Item 7)</h2>
+                        <p class="subtitle">
+                            Painel técnico para demonstração em aula de como os dados estão organizados no banco (Supabase PostgreSQL ou SQLite), como as consultas parametrizadas funcionam e como os metadados/JSON-LD são gerados dinamicamente.
+                        </p>
+                    </div>
+                    <button type="button" id="btn-refresh-inspector" class="btn btn-secondary btn-sm">Atualizar Dados</button>
+                </div>
+
+                <div class="inspector-grid">
+                    <div class="inspector-box">
+                        <h3>1. Estrutura da Tabela <code>cidadaos</code> (<span id="inspector-db-type">PostgreSQL / SQLite</span>)</h3>
+                        <p class="small-note">Colunas relacionais armazenadas no SGBD:</p>
+                        <div class="table-responsive">
+                            <table class="data-table" id="schema-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Coluna</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Obrigatório</th>
+                                        <th scope="col">PK</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="inspector-box">
+                        <h3>2. Segurança na Comunicação com o Banco (Prevenção de SQL Injection)</h3>
+                        <p class="small-note">Última operação parametrizada executada:</p>
+                        <pre class="code-block" id="last-sql-query"><code>SELECT * FROM cidadaos ORDER BY id DESC</code></pre>
+                        <p class="small-note" style="margin-top:8px;">
+                            <strong>Como os dados chegam com segurança:</strong> No Supabase (PostgREST) e no SQLite, os valores digitados pelo usuário nunca são concatenados na query SQL — são vinculados como parâmetros isolados (<em>Prepared Statements</em> <code>$1, $2</code> ou <code>?</code>), bloqueando 100% de ataques de SQL Injection.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="inspector-box" style="margin-top: 20px;">
+                    <h3>3. Histórico de Operações de Escrita (Tabela <code>logs_operacoes</code>)</h3>
+                    <div class="table-responsive">
+                        <table class="data-table" id="logs-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Ação</th>
+                                    <th scope="col">Cidadão</th>
+                                    <th scope="col">Matrícula</th>
+                                    <th scope="col">Detalhes</th>
+                                    <th scope="col">Data/Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="inspector-grid" style="margin-top: 20px;">
+                    <div class="inspector-box">
+                        <h3>4. Metadados &amp; Open Graph Atuais da Página (Item 7)</h3>
+                        <pre class="code-block" id="live-meta-preview"><code>Carregando metadados...</code></pre>
+                    </div>
+                    <div class="inspector-box">
+                        <h3>5. Dados Estruturados JSON-LD Gerados (schema.org)</h3>
+                        <pre class="code-block" id="live-jsonld-preview"><code>Carregando JSON-LD...</code></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer" role="contentinfo">
+            <p>Sistema de Consulta de Cidadão &amp; Prontuários &bull; Programação para Internet (Checkpoint 2) &bull; HTML5 Semântico, JSON-LD (schema.org), Supabase (PostgreSQL) &amp; SQLite 3</p>
+        </footer>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

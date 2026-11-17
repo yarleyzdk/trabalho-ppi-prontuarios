@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR" prefix="og: https://ogp.me/ns#">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pront-title">Ficha Semântica de Prontuário | Consulta de Prontuários</title>
+    <meta name="description" id="pront-desc" content="Ficha individual de prontuário gerada dinamicamente a partir do banco de dados.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:type" content="profile">
+    <meta property="og:site_name" content="Sistema de Consulta de Cidadão &amp; Prontuários">
+    <meta property="og:title" id="pront-og-title" content="Ficha Semântica de Prontuário">
+    <meta property="og:description" id="pront-og-desc" content="Ficha individual de prontuário gerada a partir do banco de dados.">
+    <meta property="og:url" id="pront-og-url" content="">
+    <meta property="og:image" content="img/logo-trabalhoPPI.png">
+    <meta property="og:image:alt" content="Brasão oficial do Sistema de Consulta de Prontuários">
+
+    <!-- JSON-LD Estruturado (schema.org) -->
+    <script type="application/ld+json" id="pront-jsonld">{}</script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <a href="#main-prontuario" class="skip-link">Pular para os dados do prontuário</a>
+
+    <header class="navbar" role="banner">
+        <div class="logo">
+            <img src="img/logo-trabalhoPPI.png" alt="Brasão e logotipo do Sistema de Consulta de Prontuários" width="64" height="64">
+            <div>
+                <h1>Sistema de Consulta de Prontuários</h1>
+                <p class="header-tagline" id="pront-source-tag">Ficha Individual Semântica (Item 7 &amp; Item 8)</p>
+            </div>
+        </div>
+        <nav aria-label="Navegação de retorno">
+            <a href="index.html" class="btn btn-secondary btn-sm">&larr; Voltar ao Painel</a>
+        </nav>
+    </header>
+
+    <main id="main-prontuario" class="container" role="main">
+        <nav aria-label="Trilha de navegação (Breadcrumb)" class="breadcrumb-nav">
+            <ol class="breadcrumb-list">
+                <li><a href="index.html">Início (Painel de Consulta)</a></li>
+                <li aria-current="page" id="breadcrumb-current">Carregando prontuário...</li>
+            </ol>
+        </nav>
+
+        <article id="prontuario-card" class="card result-card" itemscope itemtype="https://schema.org/Person" aria-labelledby="titulo-prontuario">
+            <p>Carregando dados do banco de dados...</p>
+        </article>
+
+        <section class="card semantic-inspector-card" aria-labelledby="titulo-inspecao-pront">
+            <h2 id="titulo-inspecao-pront">Metadados Open Graph e JSON-LD Gerados para este Cidadão (Item 7)</h2>
+            <p class="subtitle">
+                Os metadados e os dados estruturados (<code>schema.org/ProfilePage</code>, <code>Person</code> e <code>DigitalDocument</code>) abaixo foram montados automaticamente a partir do registro lido do banco de dados:
+            </p>
+            <div class="code-preview-grid">
+                <div>
+                    <h3>Metadados &amp; Open Graph (&lt;head&gt;)</h3>
+                    <pre class="code-block" id="pront-meta-code"><code>Carregando...</code></pre>
+                </div>
+                <div>
+                    <h3>Dados Estruturados JSON-LD (schema.org)</h3>
+                    <pre class="code-block" id="pront-jsonld-code"><code>Carregando...</code></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script>
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function brDateToIso(dtBr) {
+            const p = String(dtBr || '').trim().split('/');
+            return (p.length === 3 && p[2].length === 4) ? `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}` : dtBr;
+        }
+
+        function getSupabaseCreds() {
+            const savedUrl = localStorage.getItem('ppi_supabase_url') || (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || '';
+            const savedKey = localStorage.getItem('ppi_supabase_key') || (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.anonKey) || '';
+            return { url: savedUrl.trim().replace(/\/+$/, ''), key: savedKey.trim() };
+        }
+
+        async function carregarProntuarioIndividual() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id') || '1';
+            const creds = getSupabaseCreds();
+            let c = null;
+            let fonte = 'SQLite Local';
+
+            if (creds.url && creds.key) {
+                fonte = 'Supabase (PostgreSQL na Nuvem)';
+                const resp = await fetch(`${creds.url}/rest/v1/cidadaos?id=eq.${encodeURIComponent(id)}&select=*`, {
+                    headers: { apikey: creds.key, Authorization: `Bearer ${creds.key}` }
+                });
+                const rows = await resp.json();
+                if (Array.isArray(rows) && rows.length > 0) {
+                    const r = rows[0];
+                    c = {
+                        id: r.id,
+                        nome: r.nome,
+                        cpf: r.cpf,
+                        dtNascimento: r.dt_nascimento,
+                        matricula: r.matricula,
+                        mae: r.mae,
+                        pai: r.pai,
+                        origem: r.origem,
+                        linkProcessoEDocs: r.link_processo_edocs
+                    };
+                }
+            } else {
+                const resp = await fetch(`/api/cidadaos/${encodeURIComponent(id)}`);
+                const json = await resp.json();
+                if (json && json.sucesso) c = json.dados;
+            }
+
+            if (!c) {
+                document.getElementById('prontuario-card').innerHTML = '<h2>Prontuário não encontrado no banco de dados.</h2>';
+                return;
+            }
+
+            document.getElementById('pront-source-tag').innerText = `Ficha Individual Semântica • Dados vindos de: ${fonte}`;
+            const origemBadge = c.origem === 'modulo' ? 'MÓDULO (Instrução Formativa)' : 'BPE (Banca de Exames Permanente)';
+            const pageTitle = `Prontuário ${c.matricula} — ${c.nome} | Consulta de Prontuários`;
+            const pageDesc = `Prontuário digital de ${c.nome} (Matrícula ${c.matricula}, CPF ${c.cpf}, Nascimento ${c.dtNascimento}). Origem: ${origemBadge}.`;
+            const isoNasc = brDateToIso(c.dtNascimento);
+
+            document.title = pageTitle;
+            document.getElementById('pront-desc').setAttribute('content', pageDesc);
+            document.getElementById('pront-og-title').setAttribute('content', pageTitle);
+            document.getElementById('pront-og-desc').setAttribute('content', pageDesc);
+            document.getElementById('pront-og-url').setAttribute('content', window.location.href);
+            document.getElementById('breadcrumb-current').innerText = `Prontuário ${c.matricula} — ${c.nome}`;
+
+            const jsonLd = {
+                "@context": "https://schema.org",
+                "@type": "ProfilePage",
+                "name": pageTitle,
+                "description": pageDesc,
+                "url": window.location.href,
+                "mainEntity": {
+                    "@type": "Person",
+                    "name": c.nome,
+                    "birthDate": isoNasc,
+                    "identifier": [
+                        { "@type": "PropertyValue", "name": "CPF", "value": c.cpf },
+                        { "@type": "PropertyValue", "name": "Matrícula", "value": c.matricula }
+                    ],
+                    "parent": [
+                        { "@type": "Person", "name": c.mae, "description": "Mãe" },
+                        { "@type": "Person", "name": c.pai, "description": "Pai" }
+                    ],
+                    "subjectOf": {
+                        "@type": "DigitalDocument",
+                        "name": `Prontuário Digital ${c.matricula} - ${c.nome}`,
+                        "url": c.linkProcessoEDocs,
+                        "genre": origemBadge
+                    }
+                }
+            };
+
+            const jsonLdStr = JSON.stringify(jsonLd, null, 2);
+            document.getElementById('pront-jsonld').textContent = jsonLdStr;
+            document.getElementById('pront-jsonld-code').textContent = jsonLdStr;
+            document.getElementById('pront-meta-code').textContent =
+`<title>${pageTitle}</title>
+<meta name="description" content="${pageDesc}">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="${pageTitle}">
+<meta property="og:description" content="${pageDesc}">
+<meta property="og:url" content="${window.location.href}">`;
+
+            document.getElementById('prontuario-card').innerHTML = `
+                <header class="result-header">
+                    <div>
+                        <h2 id="titulo-prontuario" itemprop="name">${escapeHtml(c.nome)}</h2>
+                        <p class="subtitle" style="margin-bottom:0;">Registro ID #${c.id} (${fonte}) &bull; Matrícula <strong itemprop="identifier">${escapeHtml(c.matricula)}</strong></p>
+                    </div>
+                    <span class="badge">${escapeHtml(origemBadge)}</span>
+                </header>
+                <dl class="info-grid">
+                    <div class="info-item"><dt class="label">Nome Completo</dt><dd class="value" itemprop="name">${escapeHtml(c.nome)}</dd></div>
+                    <div class="info-item"><dt class="label">CPF</dt><dd class="value" itemprop="taxID">${escapeHtml(c.cpf)}</dd></div>
+                    <div class="info-item"><dt class="label">Data de Nascimento</dt><dd class="value"><time datetime="${escapeHtml(isoNasc)}" itemprop="birthDate">${escapeHtml(c.dtNascimento)}</time></dd></div>
+                    <div class="info-item"><dt class="label">Matrícula Funcional</dt><dd class="value" itemprop="identifier">${escapeHtml(c.matricula)}</dd></div>
+                    <div class="info-item"><dt class="label">Nome da Mãe</dt><dd class="value" itemprop="parent">${escapeHtml(c.mae)}</dd></div>
+                    <div class="info-item"><dt class="label">Nome do Pai</dt><dd class="value" itemprop="parent">${escapeHtml(c.pai)}</dd></div>
+                </dl>
+                <footer class="action-area" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <a href="index.html" class="btn btn-secondary">&larr; Voltar à Pesquisa</a>
+                    <a href="${escapeHtml(c.linkProcessoEDocs)}" target="_blank" rel="noopener noreferrer" itemprop="url" class="btn btn-success btn-icon-link">
+                        <img src="img/e-docs-logo-transparent-small.png" alt="Ícone do sistema E-Docs do Governo do Espírito Santo" width="28" height="28">
+                        <span>ACESSAR PROCESSO NO E-DOCS</span>
+                    </a>
+                </footer>
+            `;
+        }
+
+        carregarProntuarioIndividual();
+    </script>
+</body>
+
+</html>
