@@ -6,46 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- ITEM 7: Metadados Próprios Gerados a partir dos Dados da Aplicação -->
-    <title id="dynamic-title">Sistema de Consulta de Cidadão &amp; Prontuários</title>
-    <meta name="description" id="dynamic-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao SGBD Supabase (PostgreSQL na nuvem) / SQLite e ao E-Docs/ES.">
+    <title id="dynamic-title">Sistema de Consulta de Cidadão &amp; Prontuários | E-Docs ES</title>
+    <meta name="description" id="dynamic-description" content="Portal institucional integrado ao SGBD PostgreSQL (Supabase) e ao E-Docs/ES para consulta, cadastro e gestão de prontuários (Módulo e BPE).">
     <meta name="author" content="Grupo PPI - Faculdade Multivix">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yarleyzdk.github.io/trabalho-ppi-prontuarios/">
 
-    <!-- ITEM 7: Open Graph (Prévia para WhatsApp, Telegram e Redes Sociais) -->
+    <!-- ITEM 7: Open Graph com Imagem (Prévia para WhatsApp, Telegram, Facebook e LinkedIn) -->
     <meta property="og:locale" content="pt_BR">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Sistema de Consulta de Cidadão &amp; Prontuários">
-    <meta property="og:title" id="og-title" content="Sistema de Consulta de Cidadão &amp; Prontuários">
-    <meta property="og:description" id="og-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao Supabase (PostgreSQL) / SQLite e ao E-Docs/ES.">
-    <meta property="og:url" id="og-url" content="http://localhost:3000/">
-    <meta property="og:image" id="og-image" content="img/logo-trabalhoPPI.png">
-    <meta property="og:image:alt" content="Brasão e logotipo oficial do Sistema de Consulta de Prontuários">
+    <meta property="og:title" id="og-title" content="Sistema de Consulta de Cidadão &amp; Prontuários | E-Docs ES">
+    <meta property="og:description" id="og-description" content="Portal institucional integrado ao SGBD PostgreSQL (Supabase) e ao E-Docs/ES para consulta, cadastro e gestão de prontuários.">
+    <meta property="og:url" id="og-url" content="https://yarleyzdk.github.io/trabalho-ppi-prontuarios/">
+    <meta property="og:image" id="og-image" content="https://yarleyzdk.github.io/trabalho-ppi-prontuarios/img/e-docs-logo.png">
+    <meta property="og:image:secure_url" content="https://yarleyzdk.github.io/trabalho-ppi-prontuarios/img/e-docs-logo.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1000">
+    <meta property="og:image:height" content="1000">
+    <meta property="og:image:alt" content="Logotipo oficial do Sistema de Consulta de Cidadão e Prontuários integrado ao E-Docs ES">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" id="twitter-title" content="Sistema de Consulta de Cidadão &amp; Prontuários">
-    <meta name="twitter:description" id="twitter-description" content="Sistema institucional de consulta e gestão de prontuários integrado ao Supabase (PostgreSQL) / SQLite e ao E-Docs/ES.">
+    <!-- Twitter / X Card com Imagem Grande -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="Sistema de Consulta de Cidadão &amp; Prontuários | E-Docs ES">
+    <meta name="twitter:description" id="twitter-description" content="Portal institucional integrado ao SGBD PostgreSQL (Supabase) e ao E-Docs/ES para consulta, cadastro e gestão de prontuários.">
+    <meta name="twitter:image" id="twitter-image" content="https://yarleyzdk.github.io/trabalho-ppi-prontuarios/img/e-docs-logo.png">
 
-    <!-- ITEM 7: Dados Estruturados JSON-LD (schema.org) Gerados Dinamicamente a partir do Banco -->
+    <!-- ITEM 7: Dados Estruturados JSON-LD (schema.org) Válidos para Google Rich Results Test e Atualizados Dinamicamente pelo Banco -->
     <script type="application/ld+json" id="dynamic-jsonld">
 {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Sistema de Consulta de Cidadão & Prontuários",
-  "description": "Sistema institucional de consulta e gestão de prontuários integrado ao Supabase e ao E-Docs/ES.",
-  "url": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/",
-  "inLanguage": "pt-BR"
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/#website",
+      "url": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/",
+      "name": "Sistema de Consulta de Cidadão & Prontuários",
+      "description": "Portal institucional integrado ao SGBD PostgreSQL (Supabase) e ao E-Docs/ES para consulta e gestão de prontuários.",
+      "image": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/img/e-docs-logo.png",
+      "inLanguage": "pt-BR"
+    },
+    {
+      "@type": "GovernmentService",
+      "@id": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/#service",
+      "name": "Consulta e Gestão de Prontuários de Cidadãos (Módulo e BPE)",
+      "serviceType": "Consulta de Prontuários e Processos Eletrônicos E-Docs",
+      "image": "https://yarleyzdk.github.io/trabalho-ppi-prontuarios/img/logo-trabalhoPPI.png",
+      "provider": {
+        "@type": "GovernmentOrganization",
+        "name": "Governo do Estado do Espírito Santo - Integração E-Docs",
+        "url": "https://e-docs.es.gov.br"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Espírito Santo, Brasil"
+      }
+    }
+  ]
 }
     </script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 
 <body>
     <!-- Link de Acessibilidade para Navegação por Teclado (WCAG) -->
     <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
-    <!-- TELA DE LOGIN -->
+    <!-- TELA DE LOGIN RESTRITA (ADMIN / ADMIN) -->
     <section id="login-screen" class="screen" aria-labelledby="login-heading">
         <div class="card login-card" role="region" aria-describedby="login-subtitle">
             <div class="login-brand">
@@ -53,12 +81,16 @@
                 <h1 id="login-heading" class="login-main-title">Sistema de Consulta de Prontuários</h1>
             </div>
             <h2 class="login-subtitle-heading">Autenticação no Sistema</h2>
-            <p id="login-subtitle" class="subtitle">Acesse com suas credenciais institucionais (qualquer usuário/senha para demonstração)</p>
+            <p id="login-subtitle" class="subtitle">Acesso restrito a operadores autorizados</p>
+
+            <div id="login-error" class="alert alert-danger hidden" role="alert" aria-live="assertive">
+                <strong>Acesso negado!</strong> Usuário ou senha inválidos.
+            </div>
 
             <form id="login-form" aria-label="Formulário de autenticação institucional">
                 <div class="form-group">
-                    <label for="username">Usuário / CPF <span class="required-mark" aria-hidden="true">*</span></label>
-                    <input type="text" id="username" name="username" placeholder="Digite seu usuário ou CPF" autocomplete="username" required aria-required="true">
+                    <label for="username">Usuário <span class="required-mark" aria-hidden="true">*</span></label>
+                    <input type="text" id="username" name="username" placeholder="Digite seu usuário" autocomplete="username" required aria-required="true">
                 </div>
                 <div class="form-group">
                     <label for="password">Senha <span class="required-mark" aria-hidden="true">*</span></label>
@@ -84,7 +116,7 @@
             </div>
 
             <div class="user-info" role="navigation" aria-label="Controle de sessão do operador">
-                <span id="user-display" aria-live="polite">Usuário: Operador</span>
+                <span id="user-display" aria-live="polite">Usuário: admin</span>
                 <button id="logout-btn" type="button" class="btn btn-secondary btn-sm">Sair</button>
             </div>
         </header>
@@ -117,7 +149,7 @@
                     <div>
                         <h2 id="supabase-heading">Conexão com o Supabase (PostgreSQL na Nuvem)</h2>
                         <p class="subtitle">
-                            Cole abaixo a <strong>Project URL</strong> e a <strong>Anon Public Key</strong> do seu projeto no Supabase (ou defina no arquivo <code>config.js</code> para deixar fixo ao hospedar no GitHub Pages / Vercel / Netlify).
+                            Cole abaixo a <strong>Project URL</strong> e a <strong>Anon Public Key</strong> do seu projeto no Supabase (ou defina no arquivo <code>config.js</code> para deixar fixo no GitHub Pages).
                         </p>
                     </div>
                     <button type="button" id="btn-close-supabase" class="btn btn-secondary btn-sm" aria-label="Fechar configuração do Supabase">
@@ -129,7 +161,7 @@
                     <div class="form-row">
                         <div class="form-group flex-1">
                             <label for="supa-url">Supabase Project URL</label>
-                            <input type="url" id="supa-url" placeholder="https://seu-projeto.supabase.co">
+                            <input type="url" id="supa-url" placeholder="https://hyzqecbemuzdgiakzpyu.supabase.co">
                         </div>
                         <div class="form-group flex-3">
                             <label for="supa-key">Supabase Anon Public Key (API Key)</label>
@@ -356,7 +388,7 @@
                                     <th scope="col">Cidadão</th>
                                     <th scope="col">Matrícula</th>
                                     <th scope="col">Detalhes</th>
-                                    <th scope="col">Data/Hora</th>
+                                    <th scope="col">Data/Hora (Brasília)</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -366,7 +398,16 @@
 
                 <div class="inspector-grid" style="margin-top: 20px;">
                     <div class="inspector-box">
-                        <h3>4. Metadados &amp; Open Graph Atuais da Página (Item 7)</h3>
+                        <h3>4. Metadados &amp; Open Graph com Imagem (Prévia do WhatsApp — Item 7)</h3>
+                        <!-- Cartão visual demonstrando a prévia Open Graph com Imagem -->
+                        <div style="display:flex; gap:12px; align-items:center; background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #16a34a; border-radius:8px; padding:10px; margin-bottom:10px;">
+                            <img src="img/e-docs-logo.png" alt="Imagem da prévia Open Graph do WhatsApp" width="64" height="64" style="border-radius:6px; object-fit:cover; background:#fff; border:1px solid #dcfce7; flex-shrink:0;">
+                            <div style="font-size:0.82rem; line-height:1.35;">
+                                <div style="font-weight:700; color:#0f172a;" id="og-card-preview-title">Sistema de Consulta de Cidadão &amp; Prontuários | E-Docs ES</div>
+                                <div style="color:#475569; margin:2px 0;" id="og-card-preview-desc">Portal institucional integrado ao SGBD PostgreSQL (Supabase) e ao E-Docs/ES.</div>
+                                <div style="color:#15803d; font-size:0.75rem;">yarleyzdk.github.io &bull; og:image configurado</div>
+                            </div>
+                        </div>
                         <pre class="code-block" id="live-meta-preview"><code>Carregando metadados...</code></pre>
                     </div>
                     <div class="inspector-box">
@@ -382,8 +423,8 @@
         </footer>
     </div>
 
-    <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script src="config.js?v=4"></script>
+    <script src="script.js?v=4"></script>
 </body>
 
 </html>
