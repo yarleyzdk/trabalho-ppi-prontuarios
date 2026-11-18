@@ -305,14 +305,24 @@ function atualizarConteudoSemantico(cidadaos, contextoDescricao = 'Catálogo de 
 
     const liveMetaPreview = document.getElementById('live-meta-preview');
     const liveJsonLdPreview = document.getElementById('live-jsonld-preview');
+    const ogCardTitle = document.getElementById("og-card-preview-title");
+    const ogCardDesc = document.getElementById("og-card-preview-desc");
+    if (ogCardTitle) ogCardTitle.textContent = novoTitulo;
+    if (ogCardDesc) ogCardDesc.textContent = novaDescricao;
+
     if (liveMetaPreview) {
+        const ogImageUrl = `${baseUrl}/img/e-docs-logo.png`;
         liveMetaPreview.textContent =
 `<title>${novoTitulo}</title>
 <meta name="description" content="${novaDescricao}">
 <meta property="og:title" content="${novoTitulo}">
 <meta property="og:description" content="${novaDescricao}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${baseUrl}/">`;
+<meta property="og:url" content="${baseUrl}/">
+<meta property="og:image" content="${ogImageUrl}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1000">`;
     }
     if (liveJsonLdPreview) {
         liveJsonLdPreview.textContent = jsonLdFormatted;
