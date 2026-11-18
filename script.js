@@ -2,19 +2,17 @@
  * ============================================================================
  * SCRIPT PRINCIPAL — SISTEMA DE CONSULTA DE CIDADÃO & PRONTUÁRIOS (CHECKPOINT 2)
  * ============================================================================
- * Suporta DOIS modos de Banco de Dados Real (Item 8):
- * 1. SUPABASE (PostgreSQL na Nuvem):
- *    Permite hospedar o site em qualquer lugar (GitHub Pages, Vercel, Netlify)
- *    ou abrir de qualquer computador/celular e ler/gravar dados na nuvem via
- *    API REST/PostgREST do Supabase (que utiliza Prepared Statements no PostgreSQL).
- * 2. SQLITE 3 LOCAL (`database.db` via `app.py` ou `server.js`):
- *    Funciona localmente sem precisar de internet ou conta externa.
+ * - Autenticação restrita ao usuário `admin` e senha `admin`.
+ * - Formatação automática de timestamps UTC do Supabase/SQLite para Horário de Brasília (DD/MM/AAAA HH:MM:SS).
+ * - Integração com Supabase (PostgreSQL na nuvem) e SQLite local.
+ * - Geração dinâmica de Metadados, Open Graph e JSON-LD (schema.org).
  */
 
 // --- ELEMENTOS DO DOM ---
 const loginScreen = document.getElementById('login-screen');
 const appScreen = document.getElementById('app-screen');
 const loginForm = document.getElementById('login-form');
+const loginError = document.getElementById('login-error');
 const logoutBtn = document.getElementById('logout-btn');
 const userDisplay = document.getElementById('user-display');
 const dbCountBadge = document.getElementById('db-count-badge');
@@ -49,7 +47,7 @@ const crudMae = document.getElementById('crud-mae');
 const crudPai = document.getElementById('crud-pai');
 const crudLink = document.getElementById('crud-link');
 const btnCancelEdit = document.getElementById('btn-cancel-edit');
-const btnSaveCrud = document.getElementById('btn-save-crud');
+const btnSaveCrud = document.getElementById('crud-save-btn') || document.getElementById('btn-save-crud');
 
 const inspectorSection = document.getElementById('inspector-section');
 const operationAlert = document.getElementById('operation-alert');
@@ -80,7 +78,7 @@ const searchFeedback = document.getElementById('search-feedback');
 
 // Estado da aplicação
 let isAdvancedMode = false;
-let currentOperator = 'Operador';
+let currentOperator = 'admin';
 let currentResultsCache = [];
 
 // --- CONFIGURAÇÃO DO SUPABASE ---
@@ -144,13 +142,26 @@ function brDateToIso(dtBr) {
     return dtBr;
 }
 
+/**
+ * Converte qualquer timestamp do Supabase (ex: "2026-11-17T23:56:32.705929+00:00")
+ * ou do SQLite (ex: "2026-11-17 23:56:32") para o formato brasileiro no fuso de Brasília:
+ * "17/11/2026, 20:56:32"
+ */
 function formatarDataHoraBrasil(dataStr) {
     if (!dataStr) return '';
-    const iso = dataStr.includes('T') || dataStr.includes('+') || dataStr.endsWith('Z')
-        ? dataStr
-        : dataStr.replace(' ', 'T') + 'Z';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return dataStr;
+    let s = String(dataStr).trim();
+
+    // Remove excesso de microssegundos (.705929 -> .705) para compatibilidade universal
+    s = s.replace(/(\.\d{3})\d+/, '$1');
+
+    // Se vier do SQLite sem fuso ("YYYY-MM-DD HH:MM:SS"), trata como UTC
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s) && !s.includes('+') && !s.endsWith('Z')) {
+        s = s.replace(' ', 'T') + 'Z';
+    }
+
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return String(dataStr);
+
     return d.toLocaleString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
         day: '2-digit',
@@ -206,7 +217,7 @@ applyDateMask(crudDtNasc);
 // --- ITEM 7: GERAÇÃO DINÂMICA DE METADADOS, OPEN GRAPH E JSON-LD (SCHEMA.ORG) ---
 function atualizarConteudoSemantico(cidadaos, contextoDescricao = 'Catálogo de Prontuários') {
     const baseUrl = window.location.origin.startsWith('http')
-        ? window.location.origin
+        ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '')
         : 'http://localhost:3000';
 
     let novoTitulo = '';
@@ -320,24 +331,38 @@ function mostrarAlertaOperacao(mensagem, tipo = 'success') {
     }, 7000);
 }
 
-// --- AUTENTICAÇÃO (LOGIN / LOGOUT) ---
+// --- AUTENTICAÇÃO RESTRITA (SOMENTE USUÁRIO: admin / SENHA: admin) ---
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    if (username !== '') {
-        currentOperator = username;
-        userDisplay.innerText = `Usuário: ${username}`;
-        loginScreen.classList.add('hidden');
-        appScreen.classList.remove('hidden');
-        atualizarIndicadorBanco();
-        await carregarTodosDoBanco();
-        await atualizarPainelInspecao();
+    const usernameInput = document.getElementById('username').value.trim();
+    const passwordInput = document.getElementById('password').value;
+
+    if (usernameInput.toLowerCase() !== 'admin' || passwordInput !== 'admin') {
+        if (loginError) {
+            loginError.classList.remove('hidden');
+        }
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+        return;
     }
+
+    if (loginError) {
+        loginError.classList.add('hidden');
+    }
+
+    currentOperator = 'admin';
+    userDisplay.innerText = 'Usuário: admin';
+    loginScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+    atualizarIndicadorBanco();
+    await carregarTodosDoBanco();
+    await atualizarPainelInspecao();
 });
 
 logoutBtn.addEventListener('click', () => {
     appScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
+    if (loginError) loginError.classList.add('hidden');
     loginForm.reset();
     resetSearchState();
 });
@@ -365,7 +390,7 @@ btnCloseSupabase.addEventListener('click', () => {
 
 supabaseForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const url = supaUrlInput.value.trim().replace(/\/+$/, '');
+    const url = supaUrlInput.value.trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
     const key = supaKeyInput.value.trim();
     if (!url || !key) {
         mostrarAlertaOperacao('Informe a Project URL e a Anon Public Key do Supabase.', 'warning');
@@ -481,13 +506,14 @@ btnToggleAdvanced.addEventListener('click', () => {
 
 async function supabaseFetch(endpoint, options = {}) {
     const supa = getSupabaseConfig();
+    const cleanUrl = supa.url.replace(/\/rest\/v1\/?$/, '');
     const headers = {
         apikey: supa.key,
         Authorization: `Bearer ${supa.key}`,
         'Content-Type': 'application/json',
         ...(options.headers || {})
     };
-    return fetch(`${supa.url}/rest/v1/${endpoint}`, {
+    return fetch(`${cleanUrl}/rest/v1/${endpoint}`, {
         ...options,
         headers
     });
@@ -556,7 +582,7 @@ async function carregarTodosDoBanco() {
         }
     } catch (err) {
         mostrarAlertaOperacao(
-            'Para usar offline, inicie "iniciar_servidor.bat" (SQLite) ou clique em "Conectar Supabase (Nuvem)" para usar o banco online.',
+            'Clique em "Conectar Supabase (Nuvem)" para colar sua Anon Key do Supabase ou inicie "iniciar_servidor.bat" para usar o SQLite local.',
             'warning'
         );
     }
