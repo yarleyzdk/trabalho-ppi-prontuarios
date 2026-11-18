@@ -589,3 +589,8 @@ select:focus-visible {
     margin-top: 40px;
     background: #ffffff;
 }
+.alert-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
